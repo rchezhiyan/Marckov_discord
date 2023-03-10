@@ -2,6 +2,8 @@
 
 import sys
 from random import choice
+import discord
+import os
 
 
 def open_and_read_file(filenames):
@@ -55,6 +57,7 @@ def make_text(chains):
     return ' '.join(words)
 
 
+
 # Get the filenames from the user through a command line prompt, ex:
 # python markov.py green-eggs.txt shakespeare.txt
 filenames = sys.argv[1:]
@@ -68,3 +71,24 @@ text = open_and_read_file(filenames)
 
 # Get a Markov chain
 chains = make_chains(text)
+
+line = make_text(chains)
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+client = discord.Client(intents=intents)
+
+@client.event
+async def on_ready():
+    print(f'We have logged in as {client.user}')
+
+@client.event
+async def on_message(message):
+    if message.author == client.user:
+        return
+
+    if message.content.startswith('$hello'):
+        await message.channel.send(line)
+
+client.run(os.environ['DISCORD_TOKEN'])
